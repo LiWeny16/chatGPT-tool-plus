@@ -1,5 +1,5 @@
 # chatGPT tools plus++
-![example](https://img.shields.io/badge/GreasyFork-v1.2.1-black.svg)
+![example](https://img.shields.io/badge/GreasyFork-v1.4.2-black.svg)
 ![example](https://img.shields.io/badge/LICENSE-MIT-pink.svg)
 ![example](https://img.shields.io/badge/Link-Github-2.svg)
 
@@ -28,4 +28,8 @@
 v0.0.1~v0.4.5  
 demo版本  
 v1.2.1  
-正式版本，增加了逐字句显示以及markdown解析界限高亮
+正式版本，增加了逐字句显示
+v1.3.1
+增加markdown解析界限高亮
+v1.4.2
+增加startpage.com支持

@@ -1,14 +1,15 @@
 // ==UserScript==
 // @name         chatGPT tools Plus ++ （cookie版）
 // @namespace    http://tampermonkey.net/
-// @version      1.3.1
-// @description  chatGPT Google&必应&百度侧边栏自定义搜索(免翻墙，cookie登录版)
+// @version      1.4.2
+// @description  chatGPT Google&必应&百度&startpage 侧边栏自定义搜索(免翻墙，cookie登录版)
 // @author       Onion
 // @match        https://cn.bing.com/*
 // @match        https://www.bing.com/*
 // @match      https://chat.openai.com/chat
 // @match      https://www.google.com/*
 // @match      https://www.google.com.hk/*
+// @match      https://www.startpage.com/*
 // @include    /^https:\/\/www\.baidu\.com\/s\?wd.*$/
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=openai.com
 // @grant       GM_xmlhttpRequest
@@ -30,7 +31,7 @@
 
 // ==/UserScript==
 
-(function() {
+(function () {
     'use strict';
     // @require    https://cdnjs.cloudflare.com/ajax/libs/highlightjs-line-numbers.js/2.8.0/highlightjs-line-numbers.min.js
 
@@ -46,7 +47,7 @@
 
     //顶级配置
     //可以手动配置your_cookie!
-    const your_cookie=getCookieObject().your_cookie
+    const your_cookie = getCookieObject().your_cookie
     const requestUrl = `https://chat.openai.com/backend-api/moderations`
     var your_qus
     var abortXml
@@ -55,7 +56,7 @@
         GM_add_box_style(0)
         addBothStyle()
         keyEvent()
-        appendBox(0).then((res)=>{pivElemAddEventAndValue(0)})
+        appendBox(0).then((res) => { pivElemAddEventAndValue(0) })
         linkToBing_beautification_script()
     }
     if (window.location.href.indexOf("www.google.com") > -1) {
@@ -63,20 +64,27 @@
         GM_add_box_style(1)
         addBothStyle()
         keyEvent()
-        appendBox(1).then((res)=>{pivElemAddEventAndValue(1)})
+        appendBox(1).then((res) => { pivElemAddEventAndValue(1) })
     }
     if (window.location.href.indexOf("https://www.baidu.com/s?wd") > -1) {
         getYourCookie()
         GM_add_box_style(2)
         addBothStyle()
         keyEvent()
-        appendBox(2).then((res)=>{pivElemAddEventAndValue(2)})
+        appendBox(2).then((res) => { pivElemAddEventAndValue(2) })
+    }
+    if (window.location.href.indexOf(`www.startpage.com/sp/search`)) {
+        GM_add_box_style(3)
+        addBothStyle()
+        keyEvent()
+        appendBox(3).then((res) => { pivElemAddEventAndValue(3) })
     }
     if (window.location.href.indexOf("chat.openai.com") > -1) {
         //$.cookie('yourCookie','dumplings', {domain:'qq.com',path:'/'});
         getYourCookie()
         console.log("httpOnly保护，没法拿到cookie，自己复制粘贴控制台")
     }
+
     //顶级函数
     function uuid() { //uuid 产生
         var s = [];
@@ -91,8 +99,8 @@
         var uuid = s.join("");
         return uuid;
     }
-    function GM_add_box_style(case_web){
-        switch (case_web){
+    function GM_add_box_style(case_web) {
+        switch (case_web) {
             case 0://bing
                 GM_addStyle(`
     #gptAnswer{
@@ -172,13 +180,9 @@
         margin-left: 7px;
         }
 
-
-
-
-
     `)
                 break;//baidu
-            case 2:GM_addStyle(`
+            case 2: GM_addStyle(`
     #gptAnswer{
    margin: 15px;
    border-top: solid;
@@ -215,191 +219,236 @@
 
     `)
                 break;
-            default :
+            case 3: //startpage
+                GM_addStyle(`
+    #gptAnswer{
+   margin: 15px;
+   border-top: solid;
+    border-bottom: solid;
+    }
+    #gptInput{
+    border-radius: 4px;
+    width: 68%;
+    }
+    #button_GPT:hover{
+    background:#dcdcdccc;
+    }
+    #gptDiv{
+        flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: fit-content;
+
+    }
+    #gptInputBox{
+    display:flex;
+    justify-content: space-around;
+    }
+    #button_GPT{
+    background: transparent;
+    border-radius: 3px;
+     font-size: 14px;
+    }
+    #gptStatus{
+        margin-left: 7px;
+        }
+
+    `)
+                break;
+            default:
                 alert("参数没设定")
         }
 
     }
-    function do_it(){
-        if(!your_cookie){
-            document.getElementById('gptAnswer').innerHTML=`<div>你的cookie好像不见了！<a href="https://chat.openai.com">点我去登录获取</a></div>`
+    function do_it() {
+        if (!your_cookie) {
+            document.getElementById('gptAnswer').innerHTML = `<div>你的cookie好像不见了！<a href="https://chat.openai.com">点我去登录获取</a></div>`
         }
-        else{
+        else {
 
 
             let finalResult
             let normalArray
             let nowResult
-            document.getElementById('gptAnswer').innerHTML=`<div>加载中<span id="dot"></span></div>`
+            document.getElementById('gptAnswer').innerHTML = `<div>加载中<span id="dot"></span></div>`
 
-    abortXml=GM_xmlhttpRequest({
-        method: "POST",
-        url: "https://chat.openai.com/backend-api/conversation",
-        headers: {
-            "Content-Type": "application/json",
-            Authorization: `${your_cookie}`,
-        },
-        data: JSON.stringify({//抓包conversation就可以看到这个结构
-            action: "next",
-            messages: [
-                {
-                    id: uuid(),
-                    role: "user",
-                    content: {
-                        content_type: "text",
-                        parts: [your_qus],
-                    },
+            abortXml = GM_xmlhttpRequest({
+                method: "POST",
+                url: "https://chat.openai.com/backend-api/conversation",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `${your_cookie}`,
                 },
-            ],
-            model: "text-davinci-002-render",
-            parent_message_id: uuid(),
-        }),
-        //    onprogress: function(msg){console.log(msg)},
-        //     onreadystatechange:function(msg){log(msg)},
-        onloadstart:(stream)=>{ //肝了好久，终于找到油猴接受SSE的接受方法了
-            let result = "";
-            const reader = stream.response.getReader();
-            let charsReceived = 0;
-            reader.read().then(function processText({ done, value }) {
-                if (done) {
-                    if(finalResult==0){
-                        document.getElementById('gptAnswer').innerHTML=`<div>你的cookie好像过期了！<a href="https://chat.openai.com">点我去登录获取</a></div>`
-                    }
-                    else{
-                        document.getElementById('gptAnswer').innerHTML=`${mdConverter(decodeUnicode(finalResult.replace(/\\n+/g,"\n")))}`
-                       // document.querySelector("code").setAttribute("class", "language-javascript hljs");
-                        for(let i=0;i<=document.getElementsByTagName("code").length-1;i++){
-                        document.getElementsByTagName("code")[i].setAttribute("class", "language-javascript hljs");
-                        hljs.highlightAll()//奇怪，为什么不行
+                data: JSON.stringify({//抓包conversation就可以看到这个结构
+                    action: "next",
+                    messages: [
+                        {
+                            id: uuid(),
+                            role: "user",
+                            content: {
+                                content_type: "text",
+                                parts: [your_qus],
+                            },
+                        },
+                    ],
+                    model: "text-davinci-002-render",
+                    parent_message_id: uuid(),
+                }),
+                //    onprogress: function(msg){console.log(msg)},
+                //     onreadystatechange:function(msg){log(msg)},
+                onloadstart: (stream) => { //肝了好久，终于找到油猴接受SSE的接受方法了
+                    let result = "";
+                    const reader = stream.response.getReader();
+                    console.log(reader.read)
+                    let charsReceived = 0;
+                    reader.read().then(function processText({ done, value }) {
+                        if (done) {
+                            if (finalResult == 0) {
+                                document.getElementById('gptAnswer').innerHTML = `<div>你的cookie好像过期了！<a href="https://chat.openai.com">点我去登录获取</a></div>`
+                            }
+                            else {
+                                document.getElementById('gptAnswer').innerHTML = `${mdConverter(decodeUnicode(finalResult.replace(/\\n+/g, "\n")))}`
+                                // document.querySelector("code").setAttribute("class", "language-javascript hljs");
+                                for (let i = 0; i <= document.getElementsByTagName("code").length - 1; i++) {
+                                    document.getElementsByTagName("code")[i].setAttribute("class", "language-javascript hljs");
+                                    hljs.highlightAll()//奇怪，为什么不行
+                                }
+                            }
+                            return;
                         }
-                    }
-                    return;
-                }
 
-                charsReceived += value.length;
-                const chunk = value;
-                result += chunk;
-                //    log(JSON.stringify(chunk).replace(/\{/,"").replace(/\}/,""))
-                normalArray=Array.from(chunk)
-                //   String.fromCharCode.apply(null, normalArray)
-                nowResult=String.fromCharCode.apply(null, normalArray).match(/(?<=\[).*(?=\])/g)[0]
-           //     console.log(mdConverter(decodeUnicode(nowResult.replace(/\\n+/g,"<换行>"))))
-                if(nowResult!=="DONE"){
-                    finalResult=nowResult
-                }
+                        charsReceived += value.length;
+                        const chunk = value;
+                        console.log(value)
+                        result += chunk;
+                        //    log(JSON.stringify(chunk).replace(/\{/,"").replace(/\}/,""))
+                        normalArray = Array.from(chunk)
+                        //   String.fromCharCode.apply(null, normalArray)
+                        nowResult = String.fromCharCode.apply(null, normalArray).match(/(?<=\[).*(?=\])/g)[0]
+                        //     console.log(mdConverter(decodeUnicode(nowResult.replace(/\\n+/g,"<换行>"))))
+                        if (nowResult !== "DONE") {
+                            finalResult = nowResult
+                        }
 
-                //                console.log(finalResult)
-                document.getElementById('gptAnswer').innerHTML=`${mdConverter(decodeUnicode(finalResult.replace(/\\n+/g,"\n")))}`
-                return reader.read().then(processText);
-            });
-        },
-        responseType:"stream",
-        /*  onloadend: function (data) {
-            var answer
-            if (data.response) {
-                var data_transform=data.response.split("\n\n")
-                if(data_transform){
-                    try{
-                        data_transform=JSON.parse(data_transform.slice(-3,-2)[0].slice(6))
-                        answer=data_transform.message.content.parts[0]
-                        document.getElementById('gptAnswer').innerHTML=marked.parse(answer)
-                        //    if(!getCookieObject().preQuesAns){
-                        //           window.document.cookie=`preQuesAns=""`
-                        //        }
-                        // let preQuesAns = getCookieObject().preQuesAns+answer
-                        //  window.document.cookie=`preQuesAns=${your_qus}${preQuesAns}`
-                        // sendModerations()
-                    }catch(err){
-                        console.log(`err:${err}`)
+                        //                console.log(finalResult)
+                        document.getElementById('gptAnswer').innerHTML = `${mdConverter(decodeUnicode(finalResult.replace(/\\n+/g, "\n")))}`
+                        return reader.read().then(processText);
+                    });
+                },
+                responseType: "stream",
+                /*  onloadend: function (data) {
+                    var answer
+                    if (data.response) {
+                        var data_transform=data.response.split("\n\n")
+                        if(data_transform){
+                            try{
+                                data_transform=JSON.parse(data_transform.slice(-3,-2)[0].slice(6))
+                                answer=data_transform.message.content.parts[0]
+                                document.getElementById('gptAnswer').innerHTML=marked.parse(answer)
+                                //    if(!getCookieObject().preQuesAns){
+                                //           window.document.cookie=`preQuesAns=""`
+                                //        }
+                                // let preQuesAns = getCookieObject().preQuesAns+answer
+                                //  window.document.cookie=`preQuesAns=${your_qus}${preQuesAns}`
+                                // sendModerations()
+                            }catch(err){
+                                console.log(`err:${err}`)
+                            }
+                        }
+                        //     const answer = JSON.parse(data.response.split("\n\n").slice(-3, -2)[0].slice(6)).message.content.parts[0]
                     }
+                },*/
+                onprogress: function (msg) {
+                    //console.log(msg) //Todo
+                },
+                onerror: function (err) {
+                    document.getElementById('gptAnswer').innerHTML = `<div>some err happends,errinfo :<br>${err}</div>`
+                },
+                ontimeout: function (err) {
+                    document.getElementById('gptAnswer').innerHTML = `<div>Opps!TimeOut,Please try again,errinfo:<br>${err}</div>`
                 }
-                //     const answer = JSON.parse(data.response.split("\n\n").slice(-3, -2)[0].slice(6)).message.content.parts[0]
-            }
-        },*/
-        onprogress:function(msg){
-            //console.log(msg) //Todo
-        },
-        onerror: function (err) {
-            document.getElementById('gptAnswer').innerHTML=`<div>some err happends,errinfo :<br>${err}</div>`
-            },
-        ontimeout: function (err) {
-            document.getElementById('gptAnswer').innerHTML=`<div>Opps!TimeOut,Please try again,errinfo:<br>${err}</div>`
-            }
-    })
+            })
         }
     }
-    function creatBox(){
-        return new Promise((resolve)=>{
+    function creatBox() {
+        return new Promise((resolve) => {
             var divE = document.createElement('div');
             var divId = document.createAttribute("id"); //创建属性
             divId.value = 'gptDiv'; //设置属性值
             divE.setAttributeNode(divId); //给div添加属性
             var pE = document.createElement('p');
-            var pClass= document.createAttribute('class');
+            var pClass = document.createAttribute('class');
             pClass.value = 'textClass';
             pE.setAttributeNode(pClass)
             var pText = document.createTextNode("chatGPT tools Plus ++ v0.0.1已启动");
             pE.appendChild(pText);
             divE.appendChild(pE);
-            divE.innerHTML=`
+            divE.innerHTML = `
     <div id="gptInputBox">
     <input id="gptInput" type=text><button id="button_GPT" >chat一下</button>
     </div>
     <div id=gptCueBox>
     <p id="gptStatus">&nbsp openAI 已就绪，请输入你的问题</p>
-   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">chatGPT tools Plus ++ v1.3.1已启动<div></article>
+   <article id="gptAnswer" class="markdown-body"><div id="gptAnswer_inner">chatGPT tools Plus ++ v1.4.2已启动<div></article>
     </div><p></p>`
-        resolve(divE)
+            resolve(divE)
         })
     }
-    async function pivElemAddEventAndValue(append_case){
+    async function pivElemAddEventAndValue(append_case) {
         var search_content
-
-        if(append_case===2){
-            search_content=document.getElementById('kw').value
+        if (append_case === 3) {
+            search_content = document.getElementById('q').value
         }
-        if(append_case===1){
-            search_content=document.querySelector("#tsf > div:nth-child(1) > div.A8SBwf > div.RNNXgb > div > div.a4bIc > input:nth-child(3)").value
+        if (append_case === 2) {
+            search_content = document.getElementById('kw').value
         }
-        if(append_case===0){
-            search_content=document.getElementsByClassName('b_searchbox')[0].value
+        if (append_case === 1) {
+            search_content = document.querySelector("#tsf > div:nth-child(1) > div.A8SBwf > div.RNNXgb > div > div.a4bIc > input:nth-child(3)").value
         }
-        document.getElementById("gptInput").value=search_content
-        document.getElementById('button_GPT').addEventListener('click',()=>{
-            your_qus=document.getElementById("gptInput").value
+        if (append_case === 0) {
+            search_content = document.getElementsByClassName('b_searchbox')[0].value
+        }
+        document.getElementById("gptInput").value = search_content
+        document.getElementById('button_GPT').addEventListener('click', () => {
+            your_qus = document.getElementById("gptInput").value
             do_it()
 
         })
 
 
     }
-    async function appendBox(append_case){
-        return new Promise((resolve,reject)=>{
-            creatBox().then((divE)=>{
-                switch (append_case){
+    async function appendBox(append_case) {
+        return new Promise((resolve, reject) => {
+            creatBox().then((divE) => {
+                switch (append_case) {
                     case 0: //bing
-                        if(divE){
+                        if (divE) {
                             document.getElementById('b_context').prepend(divE)
                         }
                         break;
                     case 1://google
-                        if(document.getElementsByClassName('TQc1id ')[0]){
+                        if (document.getElementsByClassName('TQc1id ')[0]) {
                             document.getElementsByClassName('TQc1id ')[0].prepend(divE);
                         }
-                        else{
+                        else {
                             document.getElementById("rcnt").appendChild(divE);
                         }
                         break;
                     case 2:
-                        if(document.getElementById('content_right')){
+                        if (document.getElementById('content_right')) {
                             document.getElementById('content_right').prepend(divE)
                         }
                         break;
-                    default :
-                        if(divE){
+                    case 3:
+                        if(document.getElementsByClassName("layout-web__sidebar")[0]){
+                            document.getElementsByClassName("layout-web__sidebar")[0].prepend(divE)
+                        }
+                    default:
+                        if (divE) {
                             console.log(`啥情况${divE}`)
                         }
-                }}).catch((err)=>{
+                }
+            }).catch((err) => {
                 throw new Error(err)
             })
 
@@ -407,7 +456,7 @@
         })
     }
     //焦点函数
-    function isBlur(){
+    function isBlur() {
         var myInput = document.getElementById('gptInput');
         if (myInput == document.activeElement) {
             return 1
@@ -415,52 +464,53 @@
             return 0
         }
     }
-    function keyEvent(){
+    function keyEvent() {
         document.onkeydown = function (e) {
             var keyNum = window.event ? e.keyCode : e.which;
             if (13 == keyNum) {
                 if (isBlur()) {
                     document.getElementById('button_GPT').click()
                 }
-                else{
+                else {
                     console.log("失焦不执行")
                 }
 
-            }}
+            }
+        }
 
     }
-    function checkIp(){
+    function checkIp() {
         GM_xmlhttpRequest({
             method: "GET",
             url: "http://ip-api.com/json/",
             onloadend: function (data) {
-                if(data){
-                    try{
-                        data=JSON.parse(data.response)
-                    }catch(err){
+                if (data) {
+                    try {
+                        data = JSON.parse(data.response)
+                    } catch (err) {
                         console.log(err)
                     }
                     console.log(data.country)
-                    if(data.country=="Hong Kong"){
-                        document.getElementById('gptStatus').innerHTML=`&nbsp openAI 已就绪，请输入你的问题`
-                 }
+                    if (data.country == "Hong Kong") {
+                        document.getElementById('gptStatus').innerHTML = `&nbsp openAI 已就绪，请输入你的问题`
+                    }
                 }
-                else{
-                    document.getElementById('gptStatus').innerHTML=`&nbsp openAI 没有就绪，请更换你的IP为非大陆节点`
-                  throw new Error('Error while executing the code');
+                else {
+                    document.getElementById('gptStatus').innerHTML = `&nbsp openAI 没有就绪，请更换你的IP为非大陆节点`
+                    throw new Error('Error while executing the code');
                 }
             },
             onerror: function (err) {
-                document.getElementById('gptStatus').innerHTML=`&nbsp openAI 没有就绪，请更换你的IP为非大陆节点`
+                document.getElementById('gptStatus').innerHTML = `&nbsp openAI 没有就绪，请更换你的IP为非大陆节点`
                 throw new Error('Error while executing the code');
             },
             ontimeout: function (err) {
-                document.getElementById('gptStatus').innerHTML=`&nbsp openAI 没有就绪，请更换你的IP为非大陆节点`
+                document.getElementById('gptStatus').innerHTML = `&nbsp openAI 没有就绪，请更换你的IP为非大陆节点`
                 throw new Error('Error while executing the code');
             }
         })
     }
-    function addBothStyle(){
+    function addBothStyle() {
         GM_addStyle(`
         #dot{
     height: 4px;
@@ -491,16 +541,16 @@
  }
     `)
     }
-    function getYourCookie(){
+    function getYourCookie() {
         GM_xmlhttpRequest({
             method: "GET",
             url: "https://chat.openai.com/api/auth/session",
             onloadend: function (data) {
-                if(data){
-                    data=JSON.parse(data.response)
+                if (data) {
+                    data = JSON.parse(data.response)
                     console.log(data.accessToken)
                     //     window.document.cookie=`your_cookie=${data.accessToken};expire:1000*60*60*24`
-                    setCookie("your_cookie",data.accessToken,1)
+                    setCookie("your_cookie", data.accessToken, 1)
                 }
             },
             onerror: function (err) {
@@ -514,11 +564,10 @@
 
 
     }
-    function setCookie(cname,cvalue,exdays)
-    {
+    function setCookie(cname, cvalue, exdays) {
         var d = new Date();
-        d.setTime(d.getTime()+(exdays*24*60*60*1000));
-        var expires = "expires="+d.toGMTString();
+        d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
+        var expires = "expires=" + d.toGMTString();
         document.cookie = cname + "=" + cvalue + "; " + expires;
     }
     //原生cookie函数
@@ -538,7 +587,7 @@
 
         return cookieObject // 返回包含 cookie 键值对的对象
     }
-    function sendModerations(){
+    function sendModerations() {
         GM_xmlhttpRequest({
             method: "POST",
             url: requestUrl,
@@ -546,9 +595,9 @@
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${your_cookie}`,
             },
-            data:JSON.stringify({
-                input:getCookieObject().preQuesAns,
-                model:"text-moderation-playground"
+            data: JSON.stringify({
+                input: getCookieObject().preQuesAns,
+                model: "text-moderation-playground"
             }),
             onloadend: function (data) {
                 console.log(data)
@@ -564,75 +613,75 @@
 
 
     }
-    function autoClick(){
+    function autoClick() {
         document.getElementById('button_GPT').click()
     }
-    function linkToBing_beautification_script(){
+    function linkToBing_beautification_script() {
 
-        if(getCookieObject.blurDeg && getCookieObject.aDeg1 && getCookieObject.aDeg2){
-            document.getElementById('gptDiv').style.background=`#ffffff${getCookieObject.aDeg2}`
-        document.getElementById('gptDiv').style.backdropFilter=`${getCookieObject.blurDeg}`
+        if (getCookieObject.blurDeg && getCookieObject.aDeg1 && getCookieObject.aDeg2) {
+            document.getElementById('gptDiv').style.background = `#ffffff${getCookieObject.aDeg2}`
+            document.getElementById('gptDiv').style.backdropFilter = `${getCookieObject.blurDeg}`
+        }
     }
-    }
-    function creatBox_and_addEventlis(append_case){
+    function creatBox_and_addEventlis(append_case) {
         var divE = document.createElement('div');
         var divId = document.createAttribute("id"); //创建属性
         divId.value = 'gptDiv'; //设置属性值
         divE.setAttributeNode(divId); //给div添加属性
         var pE = document.createElement('p');
-        var pClass= document.createAttribute('class');
+        var pClass = document.createAttribute('class');
         pClass.value = 'textClass';
         pE.setAttributeNode(pClass)
         var pText = document.createTextNode("chatGPT tools Plus ++ v0.1.3已启动");
         pE.appendChild(pText);
         divE.appendChild(pE);
-        switch (append_case){
+        switch (append_case) {
             case 0:
-                if(divE){
+                if (divE) {
                     document.getElementById('b_context').prepend(divE)
                 }
                 break;
             case 1:
-                if(document.getElementsByClassName('TQc1id ')[0]){
+                if (document.getElementsByClassName('TQc1id ')[0]) {
                     document.getElementsByClassName('TQc1id ')[0].prepend(divE);
                 }
-                else{
+                else {
                     document.getElementById("rcnt").appendChild(divE);
                 }
                 break;
             case 2:
-                if(document.getElementById('content_right')){
+                if (document.getElementById('content_right')) {
                     document.getElementById('content_right').prepend(divE)
                 }
                 break;
-            default :
-                if(divE){
+            default:
+                if (divE) {
                     document.getElementById('b_context').prepend(divE)
                 }
         }
-        document.getElementById('gptDiv').innerHTML=`<div id="gptInputBox"><input id="gptInput"type=text><button id="button_GPT">chat一下</button></div><div id=gptCueBox><p id="gptStatus">&nbsp openAI已就绪，请输入你的问题</p><div id="gptAnswer">chatGPT tools Plus++免费版v0.1.3已启动</div></div><p></p>`
+        document.getElementById('gptDiv').innerHTML = `<div id="gptInputBox"><input id="gptInput"type=text><button id="button_GPT">chat一下</button></div><div id=gptCueBox><p id="gptStatus">&nbsp openAI已就绪，请输入你的问题</p><div id="gptAnswer">chatGPT tools Plus++免费版v0.1.3已启动</div></div><p></p>`
         var search_content
-        if(append_case===2){
-            search_content=document.getElementById('kw').value
+        if (append_case === 2) {
+            search_content = document.getElementById('kw').value
         }
-        if(append_case===1){
-            search_content=document.querySelector("#tsf > div:nth-child(1) > div.A8SBwf > div.RNNXgb > div > div.a4bIc > input:nth-child(3)").value
+        if (append_case === 1) {
+            search_content = document.querySelector("#tsf > div:nth-child(1) > div.A8SBwf > div.RNNXgb > div > div.a4bIc > input:nth-child(3)").value
         }
-        if(append_case===0){
-            search_content=document.getElementsByClassName('b_searchbox')[0].value
+        if (append_case === 0) {
+            search_content = document.getElementsByClassName('b_searchbox')[0].value
         }
-        document.getElementById("gptInput").value=search_content
-        document.getElementById('button_GPT').addEventListener('click',()=>{
-            your_qus=document.getElementById("gptInput").value
+        document.getElementById("gptInput").value = search_content
+        document.getElementById('button_GPT').addEventListener('click', () => {
+            your_qus = document.getElementById("gptInput").value
             do_it()
 
         })
     }
-    function log(a){
+    function log(a) {
         console.log(a)
     }
 
-    function Uint8ArrayToString(fileData){
+    function Uint8ArrayToString(fileData) {
         var dataString = "";
         for (var i = 0; i < fileData.length; i++) {
             dataString += String.fromCharCode(fileData[i]);

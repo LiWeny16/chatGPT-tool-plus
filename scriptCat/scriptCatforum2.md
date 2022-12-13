@@ -69,12 +69,15 @@ responseType 里面设置为stream ，onloadstart 里面打印返回的结果
 + read()方法返回一个promise<br>
 promise.then方法中就带着done和value参数  
 done表示传输是否结束，结束为1，没结束为0  
-value则表示每一次传输的数据，让我们直接输出value看看吧
-
+value则表示每一次流传输的数据  
+charsReceived代表已经接收的数据长度  
+接着processText最后return 自己，即reader.read().then(processText)  
+形成循环递归调用  
+最后我们输出以下value来看看结果吧！
 <br>
 <br>
 
-我超，真的拿到了数据!但是怎么是一堆Uint8Array数组啊
+我超，真的拿到了数据!但是怎么是一堆**不停打印的**Uint8Array数组啊
 ![Alt text](../source/values.png)
 
 难道是？

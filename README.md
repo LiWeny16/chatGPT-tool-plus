@@ -33,3 +33,9 @@ v1.3.1
 增加markdown解析界限高亮
 v1.4.2
 增加startpage.com支持
+
+# 开发教程
+
+[草履虫都能看懂的chatGPT-AI接入谷歌必应实战教学（一）开端](scriptCat\scriptCatforum.md)  
+
+[草履虫都能看懂的chatGPT-AI接入谷歌必应实战教学（二）eventStream的接收](scriptCat\scriptCatforum.md)  

@@ -65,7 +65,7 @@ String.fromCharCode.apply(null,[100,97,100,97]) //大家自个试试
 unescape("\u8f6c\u6362") //输出：转换
 ```
 
-好的我们已经拿到数据了parts里面
+好的我们已经拿到parts里面的数据了
 我比较喜欢用正则匹配，大家也可以各显神通，什么Slice，什么Split啊包括JSON.parse转成JSON对象再调用啊都可以，下面就只用正则匹配的方式来阐述。    
 什么？你还不知道什么是正则表达式？[点我，十分钟了解正则！](https://www.bilibili.com/video/BV1da4y1p7iZ/?spm_id_from=333.337.search-card.all.click&vd_source=347109678632e4593a175ba64105c5ff)    
 下面是示例代码

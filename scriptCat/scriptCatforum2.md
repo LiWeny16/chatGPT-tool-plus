@@ -82,5 +82,15 @@ charsReceived代表已经接收的数据长度
 
 难道是？
 
-## (二)完结
 
+
+
+## 关于
+作者：Onion  
+邮箱：bigonion@bigonion.cn  
+声明：未经本人同意，禁止转载、搬运、抄袭！  
+
+NameSpace: https://bigonion.cn  
+Origin:https://bigonion.cn/blog   
+
+## (二)完结

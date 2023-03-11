@@ -39,3 +39,11 @@ v1.4.2
 [草履虫都能看懂的chatGPT-AI接入谷歌必应实战教学（一）开端](scriptCat\scriptCatforum.md)  
 
 [草履虫都能看懂的chatGPT-AI接入谷歌必应实战教学（二）eventStream的接收](scriptCat\scriptCatforum.md)  
+
+# 关于
+作者：Onion  
+邮箱：bigonion@bigonion.cn  
+声明：未经本人同意，禁止转载、搬运、抄袭！  
+
+NameSpace: https://bigonion.cn  
+Origin:https://bigonion.cn/blog   

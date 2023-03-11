@@ -94,6 +94,7 @@ finalResult取出来之后，观察发现带有很多形如\nn的换行符，所
 
 ## 杂谈
 GM_xmlhttprequest提供的fetch方式难道不可以吗？答案是，可以，但是返回的也是一个ReadableStream对象，和XMLHttpRequest在这里的处理方式基本没有区别，也是要在onloadstart对这个对象进行读取处理，并且fetch有一个问题，即不能对其进行abort也不支持超时控制，所以在这里，XHR是更为优质的选择  
+其实这中间经历了很多无用的尝试，教程里面其实也没有都写出来，主要是为了阅读体验能好一点，当然也不会像教程里说的那么轻描淡写啦
 
 ## 后记
 找到解决方法后，和zbbgg分享了如何解决的方法,也是荣幸出现在致谢表里了😁<br>![Alt text](../source/%E8%87%B4%E8%B0%A2.png)
@@ -101,5 +102,17 @@ GM_xmlhttprequest提供的fetch方式难道不可以吗？答案是，可以，�
 <br>
 <br>
 <br>
+
+
+
+
+## 关于
+作者：Onion  
+邮箱：bigonion@bigonion.cn  
+声明：未经本人同意，禁止转载、搬运、抄袭！  
+
+NameSpace: https://bigonion.cn  
+Origin:https://bigonion.cn/blog  
+
 
 ## (三)完结

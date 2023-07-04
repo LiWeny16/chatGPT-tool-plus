@@ -6,7 +6,7 @@
 // @author       Onion
 // @match        https://cn.bing.com/*
 // @match        https://www.bing.com/*
-// @match      https://chat.openai.com/chat
+// @match      https://chat.openai.com/*
 // @match      https://www.google.com/*
 // @match      https://www.google.com.hk/*
 // @match      https://www.startpage.com/*
